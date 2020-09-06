@@ -3,6 +3,9 @@
     <q-card>
       <ingot-images :ingot="currentIngot" :key="ingotId"/>
     </q-card>
+    <q-inner-loading :showing="loading">
+      <q-spinner-gears size="50px" color="primary" />
+    </q-inner-loading>
   </q-page>
 </template>
 
@@ -22,11 +25,22 @@ export default {
     this.$store.dispatch('app/updateIngot', {})
     this.$store.dispatch('app/changeIngotToolbarState')
   },
+  async mounted () {
+    const ingotList = this.$store.getters['app/ingotList']
+    const selectedIngot = this.$store.getters['app/currentIngot']
+    const currentIngotIndex = ingotList.findIndex(i => i.id === selectedIngot.id)
+    if (currentIngotIndex + 1 === ingotList.length) {
+      const currentFetchParams = this.$store.getters['app/currentFetchParams']
+      const startRow = currentFetchParams.startRow + currentFetchParams.fetchCount
+      await this.fetchNewList(startRow)
+    }
+  },
   name: 'Ingot',
   components: { IngotImages: IngotImages },
   data () {
     return {
-      ingotId: this.$store.getters['app/currentIngot'].id
+      ingotId: this.$store.getters['app/currentIngot'].id,
+      loading: false
     }
   },
   computed: {
@@ -34,48 +48,55 @@ export default {
       return this.$store.getters['app/currentIngot']
     }
   },
+  watch: {
+    async ingotId () {
+      const ingotList = this.$store.getters['app/ingotList']
+      const currentIngot = this.$store.getters['app/currentIngot']
+      const nextIngotIndex = ingotList.findIndex(i => i.id === currentIngot.id) + 1
+      const nextIngot = ingotList[nextIngotIndex]
+      console.log(nextIngotIndex)
+      await this.$store.dispatch('app/updateIngot', nextIngot)
+    }
+  },
   methods: {
-    // Спросить про быстрый клик
-    nextIngot () {
-      const list = this.$store.getters['app/ingotList']
-      const selected = this.$store.getters['app/currentIngot']
-      const index = list.findIndex(i => i.id === selected.id) + 1
-      if (index + 1 === list.length) {
-        const currentFetchParams = this.$store.getters['app/currentFetchParams']
-        const newFetchParams = {
-          startRow: currentFetchParams.startRow + currentFetchParams.fetchCount,
-          fetchCount: currentFetchParams.fetchCount,
-          filter: currentFetchParams.filter,
-          sortBy: currentFetchParams.sortBy,
-          descending: currentFetchParams.descending
-        }
-        this.$store.dispatch('app/getIngots', newFetchParams)
+    async fetchNewList (startRow) {
+      const currentFetchParams = this.$store.getters['app/currentFetchParams']
+      const newFetchParams = {
+        startRow: startRow,
+        fetchCount: currentFetchParams.fetchCount,
+        filter: currentFetchParams.filter,
+        sortBy: currentFetchParams.sortBy,
+        descending: currentFetchParams.descending
       }
-      this.$store.dispatch('app/updateIngot', list[index])
-      this.ingotId = list[index].id
+      await this.$store.dispatch('app/getIngots', newFetchParams)
     },
-    prevIngot () {
-      const list = this.$store.getters['app/ingotList']
-      const selected = this.$store.getters['app/currentIngot']
-      const index = list.findIndex(i => i.id === selected.id) - 1
-      if (index === 0) {
+    // Спросить про быстрый клик
+    async nextIngot () {
+
+      this.ingotId = nextIngot.id
+      if (nextIngotIndex + 1 === ingotList.length) {
+        const currentFetchParams = this.$store.getters['app/currentFetchParams']
+        const startRow = currentFetchParams.startRow + currentFetchParams.fetchCount
+        this.loading = true
+        await this.fetchNewList(startRow)
+        this.loading = false
+      }
+    },
+    async prevIngot () {
+      const ingotList = this.$store.getters['app/ingotList']
+      const currentIngot = this.$store.getters['app/currentIngot']
+      const prevIngotIndex = ingotList.findIndex(i => i.id === currentIngot.id) - 1
+      const prevIngot = ingotList[prevIngotIndex]
+      console.log(prevIngotIndex)
+      await this.$store.dispatch('app/updateIngot', prevIngot)
+      this.ingotId = prevIngot.id
+      if (prevIngotIndex === 0) {
         const currentFetchParams = this.$store.getters['app/currentFetchParams']
         const startRow = currentFetchParams.startRow - currentFetchParams.fetchCount
-        if (startRow <= 0) {
-          this.$root.$emit('blockPrevButton')
-        } else {
-          const newFetchParams = {
-            startRow: startRow,
-            fetchCount: currentFetchParams.fetchCount,
-            filter: currentFetchParams.filter,
-            sortBy: currentFetchParams.sortBy,
-            descending: currentFetchParams.descending
-          }
-          this.$store.dispatch('app/getIngots', newFetchParams)
-        }
+        this.loading = true
+        await this.fetchNewList(startRow)
+        this.loading = false
       }
-      this.$store.dispatch('app/updateIngot', list[index])
-      this.ingotId = list[index].id
     }
   }
 }

@@ -23,9 +23,9 @@
         </q-toolbar>
         <q-toolbar v-show="ingotToolbarOpen" class="bg-grey-3 text-black">
           <q-space />
-          <q-btn @click="prevBtnClick" :disable="prevBtnDisabled" flat dense>Предыдущий</q-btn>
+          <q-btn @click="prevBtnClick" :disable="prevBtnState" flat dense>Предыдущий</q-btn>
           <q-separator vertical class="q-mr-sm q-ml-sm"></q-separator>
-          <q-btn @click="nextBtnClick" flat dense>Следующий</q-btn>
+          <q-btn @click="nextBtnClick" :disable="nextBtnState" flat dense>Следующий</q-btn>
           <q-separator vertical class="q-mr-sm q-ml-sm"></q-separator>
           <q-btn @click="showDefectsClick" flat dense>Показать дефекты</q-btn>
           <q-separator vertical class="q-mr-sm q-ml-sm"></q-separator>
@@ -84,17 +84,12 @@ const linksData = [
 ]
 
 export default {
-  created () {
-    this.$root.$on('blockPrevButton', this.disablePrevButton)
-  },
   name: 'MainLayout',
   components: { EssentialLink },
   data () {
     return {
       essentialLinks: linksData,
-      currentPage: this.$route.meta.name,
-      prevBtnDisabled: false,
-      nextBtnDisabled: false
+      currentPage: this.$route.meta.name
     }
   },
   computed: {
@@ -128,6 +123,12 @@ export default {
       get () {
         return this.$store.state.app.ingotDetailsToolbarOpen
       }
+    },
+    nextBtnState () {
+      return this.$store.state.app.nextBtnDisabled
+    },
+    prevBtnState () {
+      return this.$store.state.app.prevBtnDisabled
     }
   },
   methods: {
@@ -142,9 +143,6 @@ export default {
     },
     showDefectsClick () {
       this.$root.$emit('showDefectsClick')
-    },
-    disablePrevButton () {
-      this.prevBtnDisabled = true
     }
   }
 }

@@ -15,6 +15,12 @@ export function setDrawerStateFalse (context) {
 export function changeIngotToolbarState (context) {
   context.commit('changeIngotToolbarState')
 }
+export function nextBtnDisabled (context, flag) {
+  context.commit('setNextBtnState', flag)
+}
+export function prevBtnDisabled (context, flag) {
+  context.commit('setPrevBtnState', flag)
+}
 export async function getIngots (context, fetchParams) {
   try {
     const response = await this._vm.$axios.get('/IngotApi/get-filtered', {

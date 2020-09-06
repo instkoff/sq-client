@@ -7,6 +7,8 @@ export default function () {
     leftDrawerOpen: false,
     ingotButtonsOpen: false,
     ingotDetailsToolbarOpen: false,
-    currentFetchParams: {}
+    currentFetchParams: {},
+    prevBtnDisabled: false,
+    nextBtnDisabled: false
   }
 }

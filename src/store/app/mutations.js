@@ -22,3 +22,9 @@ export function changeIngotToolbarState (state) {
 export function updateCurrentFetchParams (state, params) {
   state.currentFetchParams = params
 }
+export function setNextBtnState (state, flag) {
+  state.nextBtnDisabled = flag
+}
+export function setPrevBtnState (state, flag) {
+  state.prevBtnDisabled = flag
+}
