@@ -91,6 +91,7 @@
 
 <script>
 import { date } from 'quasar'
+import {ROUTE_INGOT} from "src/common/constants";
 export default {
   name: 'IngotsGrid',
   data () {
@@ -175,6 +176,11 @@ export default {
       }
 
       await this.$store.dispatch('app/getIngots', fetchParams)
+      this.pagination = {
+        page,
+        rowsNumber: this.rowsNumber,
+        ...
+      }
       this.pagination.rowsNumber = this.$store.getters['app/rowsNumber']
       this.pagination.page = page
       this.pagination.rowsPerPage = rowsPerPage
@@ -186,7 +192,7 @@ export default {
     onRowClick (evt, row) {
       const ingot = row
       this.$store.dispatch('app/updateIngot', ingot)
-      this.$router.push('ingot')
+      this.$router.push({ name: ROUTE_INGOT })
     }
   },
   computed: {

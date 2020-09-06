@@ -1,9 +1,11 @@
+import { ROUTE_MAIN } from "src/common/constants";
+
 const routes = [
   {
     path: '/',
     component: () => import('layouts/MainLayout.vue'),
     children: [
-      { path: '', component: () => import('pages/Index.vue'), meta: { name: 'Главная' } },
+      { path: '', component: () => import('pages/Index.vue'), name: ROUTE_MAIN, meta: { name: 'Главная' } },
       { path: 'dashboard', component: () => import('pages/Dashboard.vue'), meta: { name: 'Dashboard' } },
       { path: 'service-log', component: () => import('pages/ServiceLog.vue'), meta: { name: 'Лог работы' } },
       { path: 'settings', component: () => import('pages/Settings.vue'), meta: { name: 'Настройки' } },

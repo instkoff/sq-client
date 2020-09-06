@@ -1,4 +1,5 @@
 import { date } from 'quasar'
+import { axiosInstance } from 'boot/axios'
 
 export function setCurrentPage (context, pageName) {
   context.commit('setCurrentPage', pageName)
@@ -23,7 +24,7 @@ export function prevBtnDisabled (context, flag) {
 }
 export async function getIngots (context, fetchParams) {
   try {
-    const response = await this._vm.$axios.get('/IngotApi/get-filtered', {
+    const response = await axiosInstance.get('/IngotApi/get-filtered', {
       params: {
         StartRow: fetchParams.startRow,
         FetchCount: fetchParams.fetchCount,

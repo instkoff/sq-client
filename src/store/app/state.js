@@ -4,6 +4,7 @@ export default function () {
     tableRowsNumber: 100,
     currentPage: undefined,
     currentIngot: {},
+    // currentIngotIndex: 0,
     leftDrawerOpen: false,
     ingotButtonsOpen: false,
     ingotDetailsToolbarOpen: false,

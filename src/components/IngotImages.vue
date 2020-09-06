@@ -1,7 +1,8 @@
 <template>
   <div @click="applyCam">
     <div v-show="!isCamApplied">
-      <q-img v-for="image in ingotImages" :key="image.id" :src="image.base64String" basic>
+<!--      <q-img v-for="image in ingotImages" :key="image.id" :src="image.base64String" basic>-->
+      <q-img v-for="(id, obj) in Object.entries(ingotImagesObj)" :key="id" :src="obj.base64String" basic>
         <div class="flex justify-between" style="position: unset">
           <div class="text-subtitle2">
             Оценка дефекта {{ image.prediction }}%
@@ -34,7 +35,8 @@ export default {
   props: {
     ingot: {
       type: Object,
-      required: true
+      required: true,
+      deep: true
     }
   },
   created () {
@@ -51,13 +53,15 @@ export default {
         prediction: image.prediction,
         captureDate: date.formatDate(this.ingot.captureDate, 'DD.MM.YYYY HH:mm:ss')
       }
+      this.ingotImagesObj[id] = ingotImage
       this.ingotImages.push(ingotImage)
     }
   },
   data () {
     return {
       ingotImages: [],
-      isCamApplied: false
+      isCamApplied: false,
+      ingotImagesObj: {}
     }
   },
   methods: {

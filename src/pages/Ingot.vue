@@ -1,7 +1,7 @@
 <template>
   <q-page>
     <q-card>
-      <ingot-images :ingot="currentIngot" :key="ingotId"/>
+      <ingot-images :ingot="currentIngot"/>
     </q-card>
     <q-inner-loading :showing="loading">
       <q-spinner-gears size="50px" color="primary" />
@@ -11,7 +11,7 @@
 
 <script>
 import IngotImages from 'components/IngotImages'
-
+import { mapState } from 'vuex'
 export default {
   created () {
     this.$root.$on('nextBtnClick', this.nextIngot)
@@ -44,18 +44,11 @@ export default {
     }
   },
   computed: {
-    currentIngot () {
-      return this.$store.getters['app/currentIngot']
-    }
+    ...mapGetters('app', ['currentIngot', 'ingotList'])
   },
   watch: {
-    async ingotId () {
-      const ingotList = this.$store.getters['app/ingotList']
-      const currentIngot = this.$store.getters['app/currentIngot']
-      const nextIngotIndex = ingotList.findIndex(i => i.id === currentIngot.id) + 1
-      const nextIngot = ingotList[nextIngotIndex]
-      console.log(nextIngotIndex)
-      await this.$store.dispatch('app/updateIngot', nextIngot)
+    async currentIngot (value) {
+      this.ingotId = value.id
     }
   },
   methods: {
@@ -72,31 +65,29 @@ export default {
     },
     // Спросить про быстрый клик
     async nextIngot () {
-
-      this.ingotId = nextIngot.id
-      if (nextIngotIndex + 1 === ingotList.length) {
-        const currentFetchParams = this.$store.getters['app/currentFetchParams']
-        const startRow = currentFetchParams.startRow + currentFetchParams.fetchCount
-        this.loading = true
-        await this.fetchNewList(startRow)
-        this.loading = false
+      const currentIngot = this.$store.getters['app/currentIngot']
+      const nextIngotIndex = this.ingotList.findIndex(i => i.id === currentIngot.id) + 1
+      const nextIngot = this.ingotList[nextIngotIndex]
+      await this.$store.dispatch('app/updateIngot', nextIngot)
+      if (nextIngotIndex + 1 === this.ingotList.length) {
+        await this.fetchAnotherIngot(true)
       }
     },
     async prevIngot () {
-      const ingotList = this.$store.getters['app/ingotList']
       const currentIngot = this.$store.getters['app/currentIngot']
-      const prevIngotIndex = ingotList.findIndex(i => i.id === currentIngot.id) - 1
-      const prevIngot = ingotList[prevIngotIndex]
-      console.log(prevIngotIndex)
+      const prevIngotIndex = this.ingotList.findIndex(i => i.id === currentIngot.id) - 1
+      const prevIngot = this.ingotList[prevIngotIndex]
       await this.$store.dispatch('app/updateIngot', prevIngot)
-      this.ingotId = prevIngot.id
       if (prevIngotIndex === 0) {
-        const currentFetchParams = this.$store.getters['app/currentFetchParams']
-        const startRow = currentFetchParams.startRow - currentFetchParams.fetchCount
-        this.loading = true
-        await this.fetchNewList(startRow)
-        this.loading = false
+        await this.fetchAnotherIngot(false)
       }
+    },
+    async fetchAnotherIngot (isNext) {
+      const currentFetchParams = this.$store.getters['app/currentFetchParams']
+      const startRow = isNext ? currentFetchParams.startRow + currentFetchParams.fetchCount : currentFetchParams.startRow - currentFetchParams.fetchCount
+      this.loading = true
+      await this.fetchNewList(startRow)
+      this.loading = false
     }
   }
 }
