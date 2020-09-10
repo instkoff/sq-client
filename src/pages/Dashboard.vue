@@ -1,6 +1,6 @@
 <template>
   <q-page padding>
-    Test
+    Dashboard page
   </q-page>
 </template>
 

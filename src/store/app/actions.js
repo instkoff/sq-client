@@ -1,4 +1,5 @@
 import { date } from 'quasar'
+import { axiosInstance } from 'boot/axios'
 
 export function setCurrentPage (context, pageName) {
   context.commit('setCurrentPage', pageName)
@@ -6,14 +7,17 @@ export function setCurrentPage (context, pageName) {
 export function updateIngot (context, ingot) {
   context.commit('updateIngot', ingot)
 }
-export function setDrawerState (context) {
-  context.commit('setDrawerState')
+export function updateIngotNotes (context, notes) {
+  context.commit('updateIngotNote', notes)
 }
-export function setDrawerStateFalse (context) {
-  context.commit('setDrawerStateFalse')
+export function changeDrawerState (context) {
+  context.commit('changeDrawerState')
 }
-export function changeIngotToolbarState (context) {
-  context.commit('changeIngotToolbarState')
+export function setDrawerState (context, opened) {
+  context.commit('setDrawerState', opened)
+}
+export function changeIngotToolbarState (context, opened) {
+  context.commit('changeIngotToolbarState', opened)
 }
 export function nextBtnDisabled (context, flag) {
   context.commit('setNextBtnState', flag)
@@ -23,7 +27,7 @@ export function prevBtnDisabled (context, flag) {
 }
 export async function getIngots (context, fetchParams) {
   try {
-    const response = await this._vm.$axios.get('/IngotApi/get-filtered', {
+    const response = await axiosInstance.get('/IngotApi/get-filtered', {
       params: {
         StartRow: fetchParams.startRow,
         FetchCount: fetchParams.fetchCount,
@@ -35,7 +39,7 @@ export async function getIngots (context, fetchParams) {
       }
     })
     context.commit('updateCurrentFetchParams', fetchParams)
-    context.commit('setRowsNumber', response.data.totalRecords)
+    context.commit('setTotalRowsNumber', response.data.totalRecords)
     context.commit('setIngotList', response.data.data)
   } catch (err) {
     alert(err)

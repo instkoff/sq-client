@@ -8,7 +8,6 @@
 import IngotsGrid from 'components/IngotsGrid'
 export default {
   components: { IngotsGrid },
-
   name: 'ServiceLog'
 }
 </script>

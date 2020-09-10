@@ -2,7 +2,7 @@ export function ingotList (state) {
   return state.ingotList
 }
 export function rowsNumber (state) {
-  return state.tableRowsNumber
+  return state.totalRowsNumber
 }
 export function currentIngot (state) {
   return state.currentIngot

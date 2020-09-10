@@ -56,10 +56,13 @@
             </q-input>
           </div>
           <div class="col q-mr-sm">
-            <q-select v-model="filter.confidence" :options="confidenceOptions" filled label="Дефект"/>
+            <q-select v-model="filter.confidence" :options="confidenceOptions" emit-value map-options filled label="Дефект"/>
           </div>
           <div class="col q-mr-sm">
-            <q-select v-model="filter.defectType" :options="defectTypeOptions"  filled label="Тип дефекта"/>
+            <q-select v-model="filter.defectType" :options="defectTypeOptions" multiple filled label="Тип дефекта"/>
+          </div>
+          <div class="col q-mt-sm">
+            <q-btn @click="resetFilter" flat color="primary">Сбросить</q-btn>
           </div>
         </div>
       </div>
@@ -90,67 +93,29 @@
 </template>
 
 <script>
-import { date } from 'quasar'
+import { FetchParams, Filter, Pagination } from 'src/common/models'
+import { mapGetters } from 'vuex'
+import { confidenceSelectOptions, defectTypeSelectOptions, serviceLogTableColumns } from 'src/common/const'
 export default {
   name: 'IngotsGrid',
   data () {
     return {
-      filter: {
-        startDate: null,
-        endDate: null,
-        confidence: null,
-        defectType: null
-      },
-      confidenceOptions: ['High', 'Middle', 'Low'],
-      defectTypeOptions: ['Включения', 'Трещины', 'Провалы', 'Корочка'],
+      filter: new Filter(null, null, null, null),
+      confidenceOptions: confidenceSelectOptions,
+      defectTypeOptions: defectTypeSelectOptions,
       loading: false,
-      pagination: {
-        sortBy: 'date',
-        descending: true,
-        page: 1,
-        rowsPerPage: 15,
-        rowsNumber: 100
-      },
-      columns: [
-        {
-          name: 'id',
-          field: 'id'
-        },
-        {
-          name: 'number',
-          label: 'Номер слитка',
-          align: 'center',
-          field: 'ingotNumber',
-          sortable: false
-        },
-        {
-          name: 'prediction',
-          label: 'Оценка дефекта',
-          align: 'center',
-          format: val => `${val}%`,
-          field: 'prediction',
-          sortable: true
-        },
-        {
-          name: 'date',
-          label: 'Дата',
-          align: 'center',
-          field: 'captureDate',
-          format: val => date.formatDate(val, 'DD.MM.YYYY HH:mm:ss'),
-          sortable: true
-        },
-        {
-          name: 'images',
-          label: 'Изображение',
-          align: 'center',
-          sortable: false
-        }
-      ],
-      visibleColumns: ['number', 'prediction', 'date', 'note', 'images'],
-      data: []
+      pagination: new Pagination('date', true, 1, 15, 100),
+      columns: serviceLogTableColumns,
+      visibleColumns: ['number', 'prediction', 'date', 'note', 'images']
     }
   },
   async mounted () {
+    const currentFetchParams = this.$store.getters['app/currentFetchParams']
+    if (currentFetchParams) {
+      this.filter = currentFetchParams.filter
+      this.pagination.sortBy = currentFetchParams.sortBy
+      this.pagination.descending = currentFetchParams.descending
+    }
     await this.onRequest({
       pagination: this.pagination,
       filter: this.filter
@@ -159,40 +124,37 @@ export default {
   methods: {
     async onRequest (props) {
       const { page, rowsPerPage, sortBy, descending } = props.pagination
-      const filter = props.filter
+      const filter = new Filter(
+        props.filter.startDate,
+        props.filter.endDate,
+        props.filter.confidence,
+        props.filter.defectType)
 
       this.loading = true
 
       const fetchCount = rowsPerPage === 0 ? this.pagination.rowsNumber : rowsPerPage
       const startRow = (page - 1) * rowsPerPage
 
-      const fetchParams = {
-        startRow,
-        fetchCount,
-        filter,
-        sortBy,
-        descending
-      }
+      const fetchParams = new FetchParams(startRow, fetchCount, filter, sortBy, descending)
 
       await this.$store.dispatch('app/getIngots', fetchParams)
-      this.pagination.rowsNumber = this.$store.getters['app/rowsNumber']
-      this.pagination.page = page
-      this.pagination.rowsPerPage = rowsPerPage
-      this.pagination.sortBy = sortBy
-      this.pagination.descending = descending
+      this.pagination = new Pagination(sortBy, descending, page, rowsPerPage, this.$store.getters['app/rowsNumber'])
 
       this.loading = false
     },
     onRowClick (evt, row) {
       const ingot = row
       this.$store.dispatch('app/updateIngot', ingot)
+      this.$store.dispatch('app/setDrawerState', false)
+      this.$store.dispatch('app/changeIngotToolbarState', true)
       this.$router.push('ingot')
+    },
+    resetFilter () {
+      this.filter = new Filter(null, null, null, null)
     }
   },
   computed: {
-    ingotList () {
-      return this.$store.getters['app/ingotList']
-    }
+    ...mapGetters('app', ['ingotList'])
   }
 }
 </script>

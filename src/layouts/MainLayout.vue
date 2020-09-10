@@ -17,7 +17,7 @@
             <q-separator vertical class="q-ml-md"></q-separator>
             <q-breadcrumbs class="q-ml-md">
               <q-breadcrumbs-el class="text-black" :label="getCurrentPage" />
-              <q-breadcrumbs-el v-if="currentIngot.ingotNumber" :label="'Cлиток № ' + currentIngot.ingotNumber" />
+              <q-breadcrumbs-el v-if="currentIngot" :label="'Cлиток № ' + currentIngot.ingotNumber" />
             </q-breadcrumbs>
           </q-toolbar-title>
         </q-toolbar>
@@ -29,7 +29,7 @@
           <q-separator vertical class="q-mr-sm q-ml-sm"></q-separator>
           <q-btn @click="showDefectsClick" flat dense>Показать дефекты</q-btn>
           <q-separator vertical class="q-mr-sm q-ml-sm"></q-separator>
-          <q-btn flat dense>Показать заметки</q-btn>
+          <q-btn @click="showNotesClick" flat dense>Показать заметки</q-btn>
         </q-toolbar>
       </div>
     </q-header>
@@ -55,7 +55,6 @@
         />
       </q-list>
     </q-drawer>
-
     <q-page-container>
       <router-view />
     </q-page-container>
@@ -64,40 +63,20 @@
 
 <script>
 import EssentialLink from 'components/EssentialLink.vue'
-
-const linksData = [
-  {
-    title: 'Dashboard',
-    icon: 'dashboard',
-    link: 'dashboard'
-  },
-  {
-    title: 'Лог работы',
-    icon: 'subject',
-    link: 'service-log'
-  },
-  {
-    title: 'Настройки',
-    icon: 'settings',
-    link: 'settings'
-  }
-]
+import { mapGetters } from 'vuex'
+import { menuLinks } from 'src/common/const'
 
 export default {
   name: 'MainLayout',
   components: { EssentialLink },
   data () {
     return {
-      essentialLinks: linksData,
+      essentialLinks: menuLinks,
       currentPage: this.$route.meta.name
     }
   },
   computed: {
-    currentIngot: {
-      get () {
-        return this.$store.getters['app/currentIngot']
-      }
-    },
+    ...mapGetters('app', ['currentIngot']),
     getCurrentPage: {
       get () {
         if (this.$store.state.app.currentPage) {
@@ -110,19 +89,12 @@ export default {
       get () {
         return this.$store.state.app.leftDrawerOpen
       },
-      set () {
-        this.$store.dispatch('app/setDrawerState')
+      set (val) {
+        this.$store.dispatch('app/setDrawerState', val)
       }
     },
-    ingotButtonsOpen: {
-      get () {
-        return this.$store.state.app.ingotButtonsOpen
-      }
-    },
-    ingotToolbarOpen: {
-      get () {
-        return this.$store.state.app.ingotDetailsToolbarOpen
-      }
+    ingotToolbarOpen () {
+      return this.$store.state.app.ingotDetailsToolbarOpen
     },
     nextBtnState () {
       return this.$store.state.app.nextBtnDisabled
@@ -133,7 +105,7 @@ export default {
   },
   methods: {
     changeDrawerState () {
-      this.$store.dispatch('app/setDrawerState')
+      this.$store.dispatch('app/changeDrawerState')
     },
     nextBtnClick () {
       this.$root.$emit('nextBtnClick')
@@ -143,6 +115,9 @@ export default {
     },
     showDefectsClick () {
       this.$root.$emit('showDefectsClick')
+    },
+    showNotesClick () {
+      this.$root.$emit('showNotesClick')
     }
   }
 }

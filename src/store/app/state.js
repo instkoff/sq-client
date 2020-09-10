@@ -1,13 +1,13 @@
 export default function () {
   return {
     ingotList: [],
-    tableRowsNumber: 100,
+    totalRowsNumber: 100,
     currentPage: undefined,
-    currentIngot: {},
-    leftDrawerOpen: false,
+    currentIngot: undefined,
+    leftDrawerOpen: true,
     ingotButtonsOpen: false,
     ingotDetailsToolbarOpen: false,
-    currentFetchParams: {},
+    currentFetchParams: undefined,
     prevBtnDisabled: false,
     nextBtnDisabled: false
   }
